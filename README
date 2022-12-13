@@ -1,0 +1,56 @@
+
+### Azure Cloud Shell
+
+az group create --name az204-redis-rg --location eastus 
+
+redisName=az204redis$RANDOM  
+
+az redis create --location eastus --resource-group az204-redis-rg --name $redisName --sku Basic --vm-size c0 
+
+#### COMMANDS
+PING
+SET CHAVE "valor"
+GET CHAVE
+DEL CHAVE
+
+LPUSH CHAVE_LIST "valor1"
+LPUSH CHAVE_LIST "valor2"
+LPUSH CHAVE_LIST "valor3"
+
+LRANGE CHAVE_LIST 0 10
+
+
+
+### VSCode Console App
+dotnet new console -n Rediscache -o .
+
+dotnet add package StackExchange.Redis
+
+``` CSHARP
+using StackExchange.Redis;
+using System.Threading.Tasks;
+
+public class Program {
+    static string CONNECTION_STRING = "REDIS_CONNECTION_STRING";
+
+    static async Task Main(string[] args)
+    {
+        // The connection to the Azure Cache for Redis is managed by the ConnectionMultiplexer class.
+        using (var cache = ConnectionMultiplexer.Connect(CONNECTION_STRING))
+        {
+            IDatabase db = cache.GetDatabase();
+
+            var result = await db.ExecuteAsync("ping");
+            Console.WriteLine($"PING = {result.Type} : {result}");
+
+            bool setValue = await db.StringSetAsync("test:key", "100");
+            Console.WriteLine($"SET: {setValue}");
+
+            string getValue = await db.StringGetAsync("test:key");
+            Console.WriteLine($"GET: {getValue}");
+
+        }
+    }
+
+}
+```
